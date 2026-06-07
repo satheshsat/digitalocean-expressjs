@@ -8,6 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -20,13 +21,15 @@ jobs:
       - name: Authenticate with DigitalOcean Container Registry
         run: doctl registry login --expiry-seconds 1200
 
-      - name: Build and Tag Docker Image
+      - name: Build Docker Image
         run: |
-          docker build -t ://digitalocean.com{{ secrets.REGISTRY_NAME }}/nodejs-app:${{ github.sha }} \.
+          docker build \
+            -t registry.digitalocean.com/${{ secrets.REGISTRY_NAME }}/nodejs-app:${{ github.sha }} \
+            .
 
-      - name: Push Image to DigitalOcean Container Registry
+      - name: Push Docker Image
         run: |
-          docker push ://digitalocean.com{{ secrets.REGISTRY_NAME }}/nodejs-app:${{ github.sha }}
+          docker push registry.digitalocean.com/${{ secrets.REGISTRY_NAME }}/nodejs-app:${{ github.sha }}
 
       - name: Configure Kubernetes Cluster Credentials
         run: |
@@ -34,10 +37,10 @@ jobs:
 
       - name: Update Manifest Placeholders
         run: |
-          sed -i 's/REGISTRY_NAME/${{ secrets.REGISTRY_NAME }}/g' kubernetes.yaml
-          sed -i 's/IMAGE_TAG/${{ github.sha }}/g' kubernetes.yaml
+          sed -i "s|REGISTRY_NAME|${{ secrets.REGISTRY_NAME }}|g" kubernetes.yaml
+          sed -i "s|IMAGE_TAG|${{ github.sha }}|g" kubernetes.yaml
 
-      - name: Deploy Manifests to Kubernetes
+      - name: Deploy to Kubernetes
         run: |
           kubectl apply -f kubernetes.yaml
 
