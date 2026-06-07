@@ -22,7 +22,7 @@ jobs:
 
       - name: Build and Tag Docker Image
         run: |
-          docker build -t ://digitalocean.com{{ secrets.REGISTRY_NAME }}/nodejs-app:${{ github.sha }} .
+          docker build -t ://digitalocean.com{{ secrets.REGISTRY_NAME }}/nodejs-app:${{ github.sha }} \.
 
       - name: Push Image to DigitalOcean Container Registry
         run: |
